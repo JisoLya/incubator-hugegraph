@@ -28,6 +28,7 @@ import javax.annotation.PreDestroy;
 
 import org.apache.hugegraph.store.HgStoreEngine;
 import org.apache.hugegraph.store.business.DataManagerImpl;
+import org.apache.hugegraph.store.grpc.common.TTLCleanRequest;
 import org.apache.hugegraph.store.grpc.session.BatchReq;
 import org.apache.hugegraph.store.grpc.session.CleanReq;
 import org.apache.hugegraph.store.grpc.session.GraphReq;
@@ -45,6 +46,7 @@ import org.springframework.stereotype.Service;
 
 import com.alipay.sofa.jraft.Status;
 import com.alipay.sofa.jraft.core.NodeMetrics;
+import com.alipay.sofa.jraft.util.Utils;
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.CodedOutputStream;
 
@@ -61,7 +63,7 @@ public class HgStoreNodeService implements RaftTaskHandler {
     public static final byte TABLE_OP = 0x13;
     public static final byte GRAPH_OP = 0x14;
     public static final byte CLEAN_OP = 0x15;
-
+    public static final byte TTL_CLEAN_OP = 0x16;
     public static final byte MAX_OP = 0x59;
     private final AppConfig appConfig;
     @Autowired
@@ -100,8 +102,11 @@ public class HgStoreNodeService implements RaftTaskHandler {
                                                         .isUseRocksDBSegmentLogStorage());
                 setMaxSegmentFileSize(appConfig.getRaft().getMaxSegmentFileSize());
                 setMaxReplicatorInflightMsgs(appConfig.getRaft().getMaxReplicatorInflightMsgs());
-                setMaxEntriesSize(appConfig.getRaft().getMaxEntriesSize());
-                setMaxBodySize(appConfig.getRaft().getMaxBodySize());
+                if (appConfig.getRaft().getRpcPoolSizeByMultipleOfCPU() > 0) {
+                    setRaftRpcThreadPoolSize(
+                            Utils.cpus() * appConfig.getRaft().getRpcPoolSizeByMultipleOfCPU());
+                }
+                setRaftRpcThreadPoolSizeOfBasic(appConfig.getRaft().getRpcPoolSizeOfBasic());
             }});
             setFakePdOptions(new FakePdOptions() {{
                 setStoreList(appConfig.getFakePdConfig().getStoreList());
@@ -109,6 +114,15 @@ public class HgStoreNodeService implements RaftTaskHandler {
                 setPartitionCount(appConfig.getFakePdConfig().getPartitionCount());
                 setShardCount(appConfig.getFakePdConfig().getShardCount());
             }});
+
+            setQueryPushDownOption(new QueryPushDownOption() {{
+                setThreadPoolSize(appConfig.getQueryPushDownConfig().getThreadPoolSize());
+                setFetchBatchSize(appConfig.getQueryPushDownConfig().getFetchBatchSize());
+                setFetchTimeout(appConfig.getQueryPushDownConfig().getFetchTimeOut());
+                setMemoryLimitCount(appConfig.getQueryPushDownConfig().getMemoryLimitCount());
+                setIndexSizeLimitCount(appConfig.getQueryPushDownConfig().getIndexSizeLimitCount());
+            }});
+            setJobConfig(appConfig.getJobOptions());
         }};
 
         RaftRocksdbOptions.initRocksdbGlobalConfig(options.getRocksdbConfig());
@@ -129,7 +143,8 @@ public class HgStoreNodeService implements RaftTaskHandler {
     /**
      * Add raft task, forward data to raft
      *
-     * @return true means the data has been submitted, false means not submitted, used to reduce batch splitting for single-replica storage
+     * @return true means the data has been submitted, false means not submitted, used to reduce
+     * batch splitting for single-replica storage
      */
     public <Req extends com.google.protobuf.GeneratedMessageV3>
     void addRaftTask(byte methodId, String graphName, Integer partitionId, Req req,
@@ -182,6 +197,9 @@ public class HgStoreNodeService implements RaftTaskHandler {
                 case HgStoreNodeService.CLEAN_OP:
                     invoke(partId, methodId, CleanReq.parseFrom(input), response);
                     break;
+                case HgStoreNodeService.TTL_CLEAN_OP:
+                    invoke(partId, methodId, TTLCleanRequest.parseFrom(input), response);
+                    break;
                 default:
                     return false; // Unhandled
             }
@@ -212,6 +230,9 @@ public class HgStoreNodeService implements RaftTaskHandler {
                 break;
             case HgStoreNodeService.CLEAN_OP:
                 hgStoreSession.doClean(partId, (CleanReq) req, response);
+                break;
+            case HgStoreNodeService.TTL_CLEAN_OP:
+                hgStoreSession.cleanTtl(partId, (TTLCleanRequest) req, response);
                 break;
             default:
                 return false; // Unhandled
