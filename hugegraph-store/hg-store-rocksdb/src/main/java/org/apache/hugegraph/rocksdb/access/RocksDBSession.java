@@ -20,6 +20,7 @@ package org.apache.hugegraph.rocksdb.access;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -868,9 +869,10 @@ public class RocksDBSession implements AutoCloseable, Cloneable {
 
     /**
      * 根据表名获取 size
+     *
      * @param table table
      * @param start key start
-     * @param end key end
+     * @param end   key end
      * @return size
      */
     public long getApproximateDataSize(String table, byte[] start, byte[] end) {
@@ -886,8 +888,9 @@ public class RocksDBSession implements AutoCloseable, Cloneable {
 
             var h = this.tables.get(table);
             long[] sizes =
-                this.rocksDB.getApproximateSizes(
-                    h, Arrays.asList(r1), SizeApproximationFlag.INCLUDE_FILES, SizeApproximationFlag.INCLUDE_MEMTABLES);
+                    this.rocksDB.getApproximateSizes(
+                            h, Arrays.asList(r1), SizeApproximationFlag.INCLUDE_FILES,
+                            SizeApproximationFlag.INCLUDE_MEMTABLES);
 
             bytesSize += sizes[0];
             kbSize += bytesSize / 1024;
@@ -1043,7 +1046,7 @@ public class RocksDBSession implements AutoCloseable, Cloneable {
      * A wrapper for RocksIterator that convert RocksDB results to std Iterator
      */
 
-    public static class BackendColumn implements Comparable<BackendColumn> {
+    public static class BackendColumn implements Comparable<BackendColumn>, Serializable {
 
         public byte[] name;
         public byte[] value;
