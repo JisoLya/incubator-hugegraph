@@ -209,22 +209,22 @@ public class HgStoreEngine implements Lifecycle<HgStoreEngineOptions>, StoreStat
         closing.set(true);
         heartbeatService.shutdown();
         metricService.shutdown();
-        partitionEngines.values().stream().parallel().map(pe -> {
-            try {
-                Node raftNode = pe.getRaftNode();
-                if (raftNode.isLeader(false)) {
-                    Status status = raftNode.transferLeadershipTo(PeerId.ANY_PEER);
-                    if (!status.isOk()) {
-                        log.warn("transfer leader error: {}", status);
-                    }
-                }
-            } catch (Exception e) {
-                log.error("transfer leader error: ", e);
+// Use sequential processing for safer shutdown
+partitionEngines.values().forEach(pe -> {
+    try {
+        Node raftNode = pe.getRaftNode();
+        if (raftNode.isLeader(false)) {
+            Status status = raftNode.transferLeadershipTo(PeerId.ANY_PEER);
+            if (!status.isOk()) {
+                log.warn("transfer leader error: {}", status);
             }
-            pe.shutdown();
-            businessHandler.closeDB(pe.getGroupId());
-            return true;
-        }).collect(Collectors.toList());
+        }
+    } catch (Exception e) {
+        log.error("transfer leader error: ", e);
+    }
+    pe.shutdown();
+    businessHandler.closeDB(pe.getGroupId());
+});
         partitionEngines.clear();
         rpcServer.shutdown();
         // HgStoreEngine.init function check rpcServer whether is null, skipped if the instance
