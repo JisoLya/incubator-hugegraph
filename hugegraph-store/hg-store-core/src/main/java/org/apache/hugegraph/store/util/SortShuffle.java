@@ -30,6 +30,7 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hugegraph.store.business.itrv2.FileObjectIterator;
 import org.apache.hugegraph.store.business.itrv2.io.SortShuffleSerializer;
@@ -40,7 +41,7 @@ public class SortShuffle<T extends Serializable> {
 
     private static final int FILE_SIZE = 3;
 
-    private static int fileSeq = 0;
+    private static AtomicInteger fileSeq = new AtomicInteger(0);
 
     private static String basePath = "/tmp/";
 
@@ -71,10 +72,11 @@ public class SortShuffle<T extends Serializable> {
     }
 
     /**
-     * 将对象t追加到文件中。如果文件中的记录数已达到BATCH_SIZE，则将其写入文件并清空队列。
+     * Append object t to the file. If the record count in the file has reached BATCH_SIZE, write
+     * it to the file and clear the queue
      *
-     * @param t 要追加的对象
-     * @throws IOException 如果写入时出错
+     * @param t Object to append
+     * @throws IOException
      */
     public void append(T t) throws IOException {
         if (queue.size() >= BATCH_SIZE) {
@@ -93,7 +95,7 @@ public class SortShuffle<T extends Serializable> {
     }
 
     /**
-     * 删除文件及其目录，并清空资源。
+     * Delete file/directory and close resource
      */
     public void close() {
         if (this.files.size() > 0) {
@@ -107,9 +109,9 @@ public class SortShuffle<T extends Serializable> {
     }
 
     /**
-     * 将数据写入文件
+     * Write data to file
      *
-     * @throws IOException 如果创建文件夹失败或写文件失败时抛出
+     * @throws IOException throw exception when write file or create a directory
      */
     private void writeToFile() throws IOException {
         if (!new File(path).exists()) {
@@ -134,8 +136,7 @@ public class SortShuffle<T extends Serializable> {
     }
 
     private synchronized String getFileName() {
-        fileSeq += 1;
-        return path + fileSeq;
+        return path + fileSeq.getAndIncrement();
     }
 
     /**
