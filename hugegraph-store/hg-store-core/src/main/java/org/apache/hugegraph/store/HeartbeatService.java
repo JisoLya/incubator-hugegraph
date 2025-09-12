@@ -151,6 +151,7 @@ public class HeartbeatService implements Lifecycle<HgStoreEngineOptions>, Partit
                                 storeThreadLock.wait(timerNextDelay / 2);
                             }
                         } catch (Exception ie) {
+                            log.error("Interrupted while waiting in heartbeat error handling", ie);
                         }
                     }
                 } else {
