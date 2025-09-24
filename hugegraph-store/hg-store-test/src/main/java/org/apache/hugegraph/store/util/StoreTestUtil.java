@@ -39,18 +39,19 @@ import org.apache.hugegraph.store.HgKvEntry;
 import org.apache.hugegraph.store.HgKvIterator;
 import org.apache.hugegraph.store.HgOwnerKey;
 import org.apache.hugegraph.store.HgStoreSession;
+import org.apache.hugegraph.store.base.BaseTest;
 import org.apache.hugegraph.store.client.util.HgStoreClientConst;
 import org.apache.hugegraph.store.client.util.MetricX;
 
-public class HgStoreTestUtil {
+public class StoreTestUtil extends BaseTest {
 
     public static final String GRAPH_NAME = "default/hugegraph/g";
     public static final String GRAPH_NAME2 = "default/hugegraph2/g";
-    public static final String TABLE_NAME = "unit-table";
+    public static final String TABLE_NAME = defaultTable;
     public static final String TABLE_NAME2 = "unit-table-2";
 
     public static Map<HgOwnerKey, byte[]> batchPut(HgStoreSession session, String keyPrefix) {
-        return batchPut(session, keyPrefix, 100);
+        return batchPut(session, keyPrefix, batchSize);
     }
 
     public static Map<HgOwnerKey, byte[]> batchPut(HgStoreSession session, String keyPrefix,
@@ -169,7 +170,7 @@ public class HgStoreTestUtil {
 
     public static int println(Iterable<HgKvIterator<HgKvEntry>> iterators) {
         AtomicInteger counter = new AtomicInteger();
-        iterators.forEach(e -> counter.addAndGet(HgStoreTestUtil.println(e)));
+        iterators.forEach(e -> counter.addAndGet(StoreTestUtil.println(e)));
         return counter.get();
     }
 
@@ -382,7 +383,7 @@ public class HgStoreTestUtil {
         }
         int count = 0;
         while (iterator.hasNext()) {
-            Object ignore = iterator.next();
+            Object obj = iterator.next();
             ++count;
         }
         return count;
@@ -416,7 +417,7 @@ public class HgStoreTestUtil {
     }
 
     public static int amountIn(List<? extends Iterator> iterators) {
-        return iterators.stream().map(e -> HgStoreTestUtil.amountOf(e)).reduce(0, Integer::sum);
+        return iterators.stream().map(e -> StoreTestUtil.amountOf(e)).reduce(0, Integer::sum);
     }
 
     public static void sleeping(long time) {
@@ -433,7 +434,7 @@ public class HgStoreTestUtil {
         CountDownLatch countDownLatch = new CountDownLatch(threadsAmount);
         ExecutorService pool = new ThreadPoolExecutor(threadsAmount, threadsAmount + 20,
                                                       200, TimeUnit.SECONDS,
-                                                      new ArrayBlockingQueue<>(1000));
+                                                      new ArrayBlockingQueue<Runnable>(1000));
         for (int i = 0; i < threadsAmount; i++) {
             pool.submit(
                     () -> {
@@ -477,11 +478,5 @@ public class HgStoreTestUtil {
         System.out.println("Repeated: " + times + " times.");
         System.out.println("Fail: " + metrics.getFailureCount() + " times.");
         System.out.println("*************************************************");
-    }
-
-    public static void runWaiting() {
-        while (true) {
-            sleeping(1000);
-        }
     }
 }

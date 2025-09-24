@@ -35,9 +35,11 @@ import org.apache.hugegraph.store.util.HgStoreTestUtil;
 import org.junit.Assert;
 
 /**
- * Use fake-pd, support unit tests for raft RuntimeMethodHandle.op_Implicit(Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageResult)
+ * Use fake-pd, support unit tests for raft RuntimeMethodHandle.op_Implicit(Microsoft.AspNetCore
+ * .Mvc.RazorPages.Infrastructure.PageResult)
  */
 public class HgSessionManagerRaftFakePDTest {
+
     private static final Map<Integer, Long> leaderMap = new ConcurrentHashMap<>();
     private static final Map<Long, String> storeMap = new ConcurrentHashMap<>();
 
@@ -72,7 +74,9 @@ public class HgSessionManagerRaftFakePDTest {
                        Arrays.equals(startKey, endKey)) {
                 builder.add(leaderMap.get(startCode % partitionCount), startCode);
             } else {
-                Assert.fail("OwnerKey converted to HashCode is no longer ordered, querying by OwnerKey range is meaningless");
+                Assert.fail(
+                        "OwnerKey converted to HashCode is no longer ordered, querying by " +
+                        "OwnerKey range is meaningless");
                 builder.add(leaderMap.get(startCode % partitionCount), startCode);
                 builder.add(leaderMap.get(endCode % partitionCount), endCode);
             }
@@ -188,7 +192,6 @@ public class HgSessionManagerRaftFakePDTest {
 //            }
 //        }
 //    }
-
 
     // @Test
     public void batchGet() {
@@ -356,7 +359,8 @@ public class HgSessionManagerRaftFakePDTest {
             HgOwnerKey key =
                     HgStoreTestUtil.toOwnerKey(owner, prefixStr + HgStoreTestUtil.toSuffix(i, 2));
             String value = HgStoreTestUtil.toStr(session.get(HgStoreTestUtil.TABLE_NAME, key));
-            System.out.println("- getMetric [" + HgStoreTestUtil.toStr(key.getKey()) + "] = " + value);
+            System.out.println(
+                    "- getMetric [" + HgStoreTestUtil.toStr(key.getKey()) + "] = " + value);
             Assert.assertEquals("", value);
         }
 
@@ -595,7 +599,6 @@ public class HgSessionManagerRaftFakePDTest {
         Assert.assertEquals(1000, count);
     }
 
-
     // @Test
     public void truncate() {
         HgStoreTestUtil.println("--- test truncate ---");
@@ -611,13 +614,12 @@ public class HgSessionManagerRaftFakePDTest {
         HgStoreTestUtil.batchPut(session, tableName2, keyName, 100);
         Assert.assertEquals(100, HgStoreTestUtil.amountOf(session.scanIterator(tableName2)));
 
-
         session.truncate();
         Assert.assertEquals(0, HgStoreTestUtil.amountOf(session.scanIterator(tableName)));
         Assert.assertEquals(0, HgStoreTestUtil.amountOf(session.scanIterator(tableName2)));
     }
 
-    //// @Test
+    /// / @Test
     public void scanIteratorHuge() {
 
         /*************** test no limit, with 10 millions **************/

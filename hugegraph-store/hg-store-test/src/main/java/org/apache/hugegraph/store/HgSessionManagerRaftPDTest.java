@@ -50,12 +50,12 @@ import org.junit.Test;
 
 import lombok.extern.slf4j.Slf4j;
 
-
 /**
  * Use pd, support unit tests for raft
  */
 @Slf4j
 public class HgSessionManagerRaftPDTest {
+
     public final static String GRAPH_NAME_X = "default/hugegraph/x";
     public final static String GRAPH_NAME_Y = "default/hugegraph/y";
     public final static String GRAPH_NAME_Z = "default/hugegraph/z";
@@ -117,7 +117,6 @@ public class HgSessionManagerRaftPDTest {
         HgStoreSession session = getStoreSession();
         //  System.out.println(amountOf(session.scanIterator(TABLE_NAME)));
 
-
         Iterator iterator = session.scanIterator(HgStoreTestUtil.TABLE_NAME, 0, 65535,
                                                  HgKvStore.SCAN_HASHCODE, EMPTY_BYTES);
         System.out.println(HgStoreTestUtil.amountOf(iterator));
@@ -158,7 +157,6 @@ public class HgSessionManagerRaftPDTest {
                 HgStoreTestUtil.TABLE_NAME, key)));
     }
 
-
     @Test
     public void testBatchPutExt() throws IOException {
         System.out.println("--- test batchPut ---");
@@ -179,7 +177,6 @@ public class HgSessionManagerRaftPDTest {
         System.out.printf("%d entries have be put into graph %s\n", map.size(),
                           HgStoreTestUtil.GRAPH_NAME);
 
-
         int count = 0;
         HgKvIterator<HgKvEntry> iterator = null;
         iterator = session.scanIterator(HgStoreTestUtil.TABLE_NAME);
@@ -190,7 +187,6 @@ public class HgSessionManagerRaftPDTest {
         Assert.assertEquals(1000, count);
 
     }
-
 
     // @Test
     public void testBatchGetExt() throws IOException, ClassNotFoundException {
@@ -402,7 +398,8 @@ public class HgSessionManagerRaftPDTest {
             HgOwnerKey key =
                     HgStoreTestUtil.toOwnerKey(owner, prefixStr + HgStoreTestUtil.toSuffix(i, 2));
             String value = HgStoreTestUtil.toStr(session.get(HgStoreTestUtil.TABLE_NAME, key));
-            System.out.println("- getMetric [" + HgStoreTestUtil.toStr(key.getKey()) + "] = " + value);
+            System.out.println(
+                    "- getMetric [" + HgStoreTestUtil.toStr(key.getKey()) + "] = " + value);
             Assert.assertEquals("", value);
         }
 
@@ -712,13 +709,12 @@ public class HgSessionManagerRaftPDTest {
         HgStoreTestUtil.batchPut(session, tableName2, keyName, 100);
         Assert.assertEquals(100, HgStoreTestUtil.amountOf(session.scanIterator(tableName2)));
 
-
         session.truncate();
         Assert.assertEquals(0, HgStoreTestUtil.amountOf(session.scanIterator(tableName)));
         Assert.assertEquals(0, HgStoreTestUtil.amountOf(session.scanIterator(tableName2)));
     }
 
-    //// @Test
+    /// / @Test
     public void scanIteratorHuge() {
 
         /*************** test no limit, with 10 millions **************/
@@ -747,12 +743,10 @@ public class HgSessionManagerRaftPDTest {
         Assert.assertEquals(amount, count);
     }
 
-
     // @Test
     public void scanTable() {
         HgStoreSession session = getStoreSession("DEFAULT/hg1/g");
         HgStoreTestUtil.println(session.scanIterator("g+v", 10));
-
 
     }
 
@@ -919,7 +913,6 @@ public class HgSessionManagerRaftPDTest {
         log.info(" size is {}", count);
         log.info("*************************************************");
 
-
     }
 
     // @Test
@@ -975,7 +968,6 @@ public class HgSessionManagerRaftPDTest {
         log.info(" Page : {} (KVs)", HgStoreClientConfig.of().getNetKvScannerPageSize());
         log.info(" size is {}", count);
         log.info("*************************************************");
-
 
     }
 }

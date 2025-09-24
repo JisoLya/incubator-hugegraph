@@ -24,21 +24,23 @@ import java.util.List;
 
 import org.apache.hugegraph.pd.grpc.Metapb;
 import org.apache.hugegraph.pd.grpc.pulse.DbCompaction;
+import org.apache.hugegraph.pd.grpc.pulse.PartitionHeartbeatResponse;
 import org.apache.hugegraph.pd.grpc.pulse.SplitPartition;
 import org.apache.hugegraph.pd.grpc.pulse.TransferLeader;
-import org.apache.hugegraph.store.PartitionInstructionProcessor;
 import org.apache.hugegraph.store.core.StoreEngineTestBase;
 import org.apache.hugegraph.store.pd.FakePdServiceProvider;
+import org.apache.hugegraph.store.processor.CommandProcessor;
+import org.apache.hugegraph.store.processor.Processors;
 import org.junit.Before;
 import org.junit.Test;
 
 public class PartitionInstructionProcessorTest extends StoreEngineTestBase {
 
-    PartitionInstructionProcessor processor;
+    Processors processor;
 
     @Before
     public void init() {
-        processor = new PartitionInstructionProcessor(getStoreEngine());
+        processor = new Processors(getStoreEngine());
     }
 
     @Test
@@ -105,5 +107,99 @@ public class PartitionInstructionProcessorTest extends StoreEngineTestBase {
     @Test
     public void testChangeShard() {
 
+    }
+
+    @Test
+    public void testMulti() throws InterruptedException {
+        var engine = createPartitionEngine(0);
+        engine.waitForLeader(1000);
+
+        var partition = getPartition(0);
+
+        PartitionHeartbeatResponse instruct = PartitionHeartbeatResponse.newBuilder()
+                                                                        .setId(1L)
+                                                                        .setPartition(
+                                                                                partition.getProtoObj())
+                                                                        .setDbCompaction(
+                                                                                DbCompaction.newBuilder()
+                                                                                            .setTableName(
+                                                                                                    "test"))
+                                                                        .build();
+
+        PartitionHeartbeatResponse instruct2 = PartitionHeartbeatResponse.newBuilder()
+                                                                         .setId(2L)
+                                                                         .setTransferLeader(
+                                                                                 TransferLeader.newBuilder()
+                                                                                               .setShard(
+                                                                                                       Metapb.Shard.newBuilder()
+                                                                                                                   .setStoreId(
+                                                                                                                           FakePdServiceProvider.makeStoreId(
+                                                                                                                                   "127.0.0.1:6511"))
+                                                                                                                   .setRole(
+                                                                                                                           Metapb.ShardRole.Leader)
+                                                                                                                   .build()))
+                                                                         .build();
+
+        PartitionHeartbeatResponse instruct3 = PartitionHeartbeatResponse.newBuilder()
+                                                                         .setId(3L)
+                                                                         .setSplitPartition(
+                                                                                 SplitPartition.newBuilder()
+                                                                                               .addNewPartition(
+                                                                                                       Metapb.Partition.newBuilder(
+                                                                                                                     partition.getProtoObj())
+                                                                                                                       .setStartKey(
+                                                                                                                               0)
+                                                                                                                       .setEndKey(
+                                                                                                                               20000)
+                                                                                                                       .build())
+                                                                                               .addNewPartition(
+                                                                                                       Metapb.Partition.newBuilder(
+                                                                                                                     partition.getProtoObj())
+                                                                                                                       .setStartKey(
+                                                                                                                               20000)
+                                                                                                                       .setEndKey(
+                                                                                                                               65535)
+                                                                                                                       .setId(1)
+                                                                                                                       .build()))
+                                                                         .build();
+        PartitionHeartbeatResponse instruct4 = PartitionHeartbeatResponse.newBuilder()
+                                                                         .setId(4L)
+                                                                         .setPartition(
+                                                                                 partition.getProtoObj())
+                                                                         .setDbCompaction(
+                                                                                 DbCompaction.newBuilder()
+                                                                                             .setTableName(
+                                                                                                     "test"))
+                                                                         .build();
+
+        processor.process(instruct, integer -> {
+                              assertEquals(0, integer.intValue());
+                              System.out.println("task 1");
+                          }
+        );
+
+        processor.process(instruct2, integer -> {
+                              assertEquals(0, integer.intValue());
+                              System.out.println("task 2");
+                          }
+        );
+
+        processor.process(instruct3, integer -> {
+                              assertEquals(0, integer.intValue());
+                              System.out.println("task 3");
+                          }
+        );
+
+        Thread.sleep(1000);
+        processor.process(instruct4, integer -> {
+                              assertEquals(0, integer.intValue());
+                              System.out.println("task 4");
+                          }
+        );
+
+        CommandProcessor.waitingToFinished();
+
+        assertTrue(CommandProcessor.isEmpty());
+        assertFalse(CommandProcessor.isRunning());
     }
 }

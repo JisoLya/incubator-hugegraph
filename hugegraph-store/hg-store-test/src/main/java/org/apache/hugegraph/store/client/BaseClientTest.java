@@ -17,18 +17,30 @@
 
 package org.apache.hugegraph.store.client;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.apache.hugegraph.pd.client.PDClient;
+import org.apache.hugegraph.store.HgStoreClient;
+import org.apache.hugegraph.store.base.BaseTest;
+import org.junit.After;
+import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
-import lombok.extern.slf4j.Slf4j;
+@RunWith(MockitoJUnitRunner.class)
+public class BaseClientTest extends BaseTest {
 
-@Slf4j
-public class ClientTest {
+    public static HgStoreClient storeClient;
+    public static PDClient pdClient;
+    protected static String graphName = "testGraphName";
+    protected static String tableName = defaultTable;
 
-    @Test
-    public void testDemo() {
-        String s = "i am client";
-        log.info("UT:{}", s);
-        Assert.assertTrue(s.startsWith("i"));
+    @BeforeClass
+    public static void beforeClass() {
+        storeClient = HgStoreClient.create(getPdConfig());
+        pdClient = storeClient.getPdClient();
+    }
+
+    @After
+    public void teardown() {
+        // pass
     }
 }

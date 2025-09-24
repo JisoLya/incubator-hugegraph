@@ -15,11 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.hugegraph.store;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+package org.apache.hugegraph.store.util;
 
 import org.apache.hugegraph.rocksdb.access.RocksDBFactory;
 import org.apache.hugegraph.rocksdb.access.RocksDBSession;
@@ -31,14 +27,11 @@ import org.apache.hugegraph.store.options.RaftRocksdbOptions;
 import org.apache.hugegraph.store.pd.FakePdServiceProvider;
 import org.apache.hugegraph.store.pd.PdProvider;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
 public class UnitTestBase {
-
-    public final static RocksDBFactory factory = RocksDBFactory.getInstance();
-    public final static String DEFAULT_TEST_TABLE = "unknown";
-    private String dbPath;
-
-    private BusinessHandler handler;
-
     public static boolean deleteDir(File dir) {
         if (dir.isDirectory()) {
             for (File file : dir.listFiles()) {
@@ -47,6 +40,11 @@ public class UnitTestBase {
         }
         return dir.delete();
     }
+
+    private String dbPath;
+
+    private BusinessHandler handler;
+    public static final RocksDBFactory FACTORY = RocksDBFactory.getInstance();
 
     public void initDB(String dbPath) {
         this.dbPath = dbPath;
@@ -57,6 +55,7 @@ public class UnitTestBase {
 
         RaftRocksdbOptions.initRocksdbGlobalConfig(configMap);
         BusinessHandlerImpl.initRocksdb(configMap, null);
+
 
     }
 
@@ -86,9 +85,9 @@ public class UnitTestBase {
     }
 
     public RocksDBSession getDBSession(String dbName) {
-        RocksDBSession session = factory.queryGraphDB(dbName);
+        RocksDBSession session = FACTORY.queryGraphDB(dbName);
         if (session == null) {
-            session = factory.createGraphDB(dbPath, dbName);
+            session = FACTORY.createGraphDB(dbPath, dbName);
         }
         return session;
     }

@@ -48,6 +48,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class HgSessionManagerTest {
+
     private static final Map<Integer, Long> leaderMap = new ConcurrentHashMap<>();
     private static final Map<Long, String> storeMap = new ConcurrentHashMap<>();
 
@@ -91,7 +92,9 @@ public class HgSessionManagerTest {
                 //log.info("leader-> {}",leaderMap.getMetric(startCode / PARTITION_LENGTH));
                 builder.add(leaderMap.get(startCode / PARTITION_LENGTH), startCode);
             } else {
-                Assert.fail("OwnerKey converted to HashCode is already unordered, querying by OwnerKey range is meaningless");
+                Assert.fail(
+                        "OwnerKey converted to HashCode is already unordered, querying by " +
+                        "OwnerKey range is meaningless");
                 builder.add(leaderMap.get(startCode / PARTITION_LENGTH), startCode);
                 builder.add(leaderMap.get(endCode / PARTITION_LENGTH), endCode);
             }
@@ -310,7 +313,8 @@ public class HgSessionManagerTest {
             HgOwnerKey key =
                     HgStoreTestUtil.toOwnerKey(owner, prefixStr + HgStoreTestUtil.toSuffix(i, 2));
             String value = HgStoreTestUtil.toStr(session.get(HgStoreTestUtil.TABLE_NAME, key));
-            System.out.println("- getMetric [" + HgStoreTestUtil.toStr(key.getKey()) + "] = " + value);
+            System.out.println(
+                    "- getMetric [" + HgStoreTestUtil.toStr(key.getKey()) + "] = " + value);
             Assert.assertEquals("", value);
         }
 
@@ -593,7 +597,6 @@ public class HgSessionManagerTest {
             if (count >= max) break;
         }
 
-
         iterator = session.scanIterator(tableName
                 , HgStoreTestUtil.toAllPartitionKey(keyName + "-000")
                 , HgStoreClientConst.EMPTY_OWNER_KEY
@@ -665,7 +668,6 @@ public class HgSessionManagerTest {
         Assert.assertEquals(keyAmt, HgStoreTestUtil.println(iterators));
 
         HgStoreTestUtil.println("-- test scan-batch prefix --");
-
 
         iterators = session.scanBatch(
                 HgScanQuery.prefixOf(tableName, prefixList)
@@ -796,11 +798,9 @@ public class HgSessionManagerTest {
                                HgStoreTestUtil.toStr(session.get(tableName, key)));
         Assert.assertTrue(session.existsTable(tableName));
 
-
         HgStoreTestUtil.println("-- test dropTable --");
         Assert.assertTrue(session.dropTable(tableName));
         Assert.assertFalse(session.existsTable(tableName));
-
 
         HgStoreTestUtil.println("-- test existsTable --");
         Assert.assertFalse(session.existsTable(tableName));
@@ -845,7 +845,7 @@ public class HgSessionManagerTest {
         //TODO : add others
     }
 
-    //// @Test
+    /// / @Test
     public void scanIterator_WithNonePartition() {
         HgStoreTestUtil.println("--- test scanIterator with none partition ---");
         int count = 0;
@@ -864,7 +864,7 @@ public class HgSessionManagerTest {
 
     }
 
-    //// @Test
+    /// / @Test
     public void repeatedly_parallel_scan() {
         MetricX metrics = MetricX.ofStart();
         HgStoreTestUtil.repeatedlyTest(100, () -> parallel_scan());
@@ -892,7 +892,7 @@ public class HgSessionManagerTest {
         }, t -> t.printStackTrace());
     }
 
-    //// @Test
+    /// / @Test
     public void put_Benchmark() {
         /*************** Put Benchmark **************/
         String tableName = "UNIT_PUT_BENCHMARK";
@@ -930,10 +930,9 @@ public class HgSessionManagerTest {
 
         Assert.assertEquals(amount, HgStoreTestUtil.amountOf(session.scanIterator(tableName)));
 
-
     }
 
-    //// @Test
+    /// / @Test
     public void put_Benchmark_Parallel() {
         int threadsAmount = 100;
         CountDownLatch countDownLatch = new CountDownLatch(threadsAmount);
@@ -955,7 +954,7 @@ public class HgSessionManagerTest {
 
     }
 
-    //// @Test
+    /// / @Test
     public void parallel_scanBatch() {
         int threadsAmount = 50;
         CountDownLatch countDownLatch = new CountDownLatch(threadsAmount);
@@ -981,7 +980,7 @@ public class HgSessionManagerTest {
 
     }
 
-    //// @Test
+    /// / @Test
     public void benchmark_scanBatch() {
         HgStoreTestUtil.println("--- Benchmark scanBatch ---");
         String tableName = "Benchmark_SCAN_BATCH";
@@ -1021,7 +1020,7 @@ public class HgSessionManagerTest {
         //    }
     }
 
-    //// @Test
+    /// / @Test
     public void benchmark_scan() {
         /*************** test no limit, with 10 millions **************/
         String tableName = "UNIT_HUGE";
@@ -1065,8 +1064,7 @@ public class HgSessionManagerTest {
         Assert.assertEquals(amount, count);
     }
 
-
-    //// @Test
+    /// / @Test
     public void extreme_scan_close() {
         /*************** test close **************/
         String tableName = "UNIT_ITER_CLOSE_EXTREME";
@@ -1090,18 +1088,18 @@ public class HgSessionManagerTest {
         HgStoreTestUtil.runWaiting();
     }
 
-    //// @Test
+    /// / @Test
     public void parallel_scan_close() {
         HgStoreTestUtil.parallelTest(10, () -> this.scan_close(), t -> t.printStackTrace());
     }
 
-    //// @Test
+    /// / @Test
     public void repeat_parallel_scan_close() {
         HgStoreTestUtil.repeatedlyTest(1000, () -> this.parallel_scan_close());
         HgStoreTestUtil.runWaiting();
     }
 
-    //// @Test
+    /// / @Test
     public void parallel_huge_scan() {
         int threadsAmount = 3;
         CountDownLatch countDownLatch = new CountDownLatch(threadsAmount);

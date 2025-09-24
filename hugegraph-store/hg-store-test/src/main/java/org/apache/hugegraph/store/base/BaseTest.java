@@ -15,20 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.hugegraph.store.core;
+package org.apache.hugegraph.store.base;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.apache.hugegraph.pd.client.PDConfig;
 
-import lombok.extern.slf4j.Slf4j;
+/**
+ * If run tests, pd config must be set to user's
+ */
+public class BaseTest {
 
-@Slf4j
-public class CoreTest {
+    protected static String pdGrpcAddr = "127.0.0.1:8686";
+    protected static String pdRestAddr = "http://127.0.0.1:8620";
+    protected static String user = "store";
+    protected static String pwd = "test";
+    protected static String key = "Authorization";
+    protected static String value = "Basic";
+    protected static int batchSize = 10;
+    protected static String defaultTable = "unknown";
 
-    @Test
-    public void testDemo() {
-        String s = "i am core";
-        log.info("UT:{}", s);
-        Assert.assertTrue(s.startsWith("i"));
+    protected static PDConfig getPdConfig() {
+        return PDConfig.of(pdGrpcAddr).setAuthority(user, pwd).setEnableCache(true);
     }
 }

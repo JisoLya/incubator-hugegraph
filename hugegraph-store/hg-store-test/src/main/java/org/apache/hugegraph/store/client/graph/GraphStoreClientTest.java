@@ -44,12 +44,12 @@ public class GraphStoreClientTest {
     ConcurrentHashMap<Long, StreamObserver<ScanPartitionRequest>> observers =
             new ConcurrentHashMap<>();
 
-    @Test
+    //@Test
     public void getData() {
         long start = System.currentTimeMillis();
-        String[] addresses = new String[]{"10.14.139.71:8500",
-                                          "10.14.139.70:8500",
-                                          "10.14.139.69:8500"};
+        String[] addresses = new String[]{"127.0.0.1:8500",
+                                          "127.0.0.2:8500",
+                                          "127.0.0.3:8500"};
         Arrays.stream(addresses).parallel().forEach(address -> {
             int size = 72;
             CountDownLatch latch = new CountDownLatch(size);
@@ -154,7 +154,6 @@ public class GraphStoreClientTest {
             e.printStackTrace();
         }
     }
-
 
     @Test
     public void getDataSingle() {

@@ -17,20 +17,21 @@
 
 package org.apache.hugegraph.store.client;
 
+import static util.StoreTestUtil.GRAPH_NAME;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.hugegraph.store.util.HgStoreTestUtil;
 import org.junit.Test;
 
-public class HgStoreNodeStateTest {
+public class NodeStateTest {
 
     private static final HgStoreNodeManager NODE_MANAGER = HgStoreNodeManager.getInstance();
     static int nodeNumber = 0;
 
     static {
-        registerNode(HgStoreTestUtil.GRAPH_NAME, Long.valueOf(nodeNumber++), "localhost:9180");
-        registerNode(HgStoreTestUtil.GRAPH_NAME, Long.valueOf(nodeNumber++), "localhost:9280");
-        registerNode(HgStoreTestUtil.GRAPH_NAME, Long.valueOf(nodeNumber++), "localhost:9380");
+        registerNode(GRAPH_NAME, Long.valueOf(nodeNumber++), "localhost:9180");
+        registerNode(GRAPH_NAME, Long.valueOf(nodeNumber++), "localhost:9280");
+        registerNode(GRAPH_NAME, Long.valueOf(nodeNumber++), "localhost:9380");
     }
 
     private static void registerNode(String graphName, Long nodeId, String address) {
@@ -44,7 +45,7 @@ public class HgStoreNodeStateTest {
         AtomicInteger count = new AtomicInteger(0);
 
         for (int i = 0; i < 100; i++) {
-            NODE_MANAGER.getStoreNodes(HgStoreTestUtil.GRAPH_NAME)
+            NODE_MANAGER.getStoreNodes(GRAPH_NAME)
                         .stream().map(
                                 node -> {
                                     System.out.println(node.getNodeId() + " " + node.getAddress()

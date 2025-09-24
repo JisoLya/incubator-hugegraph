@@ -15,20 +15,28 @@
  * limitations under the License.
  */
 
-package org.apache.hugegraph.store.common;
+package org.apache.hugegraph.store.client;
 
-import org.apache.hugegraph.store.term.Bits;
-import org.junit.Assert;
-// import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
-public class BitsTest {
-    // @Test
-    public void test() {
-        for (int i = 0; i < Integer.MAX_VALUE; i = i + 10) {
-            byte[] val = new byte[4];
-            Bits.putInt(val, 0, i);
-            int n = Bits.getInt(val, 0);
-            Assert.assertEquals(i, n);
-        }
-    }
+import lombok.extern.slf4j.Slf4j;
+
+@RunWith(Suite.class)
+@Suite.SuiteClasses({
+        // GraphStoreClientTest.class
+        // QueryV2Test.class,
+        KVTest.class,
+        HgStoreClientTest.class,
+        NodeStateTest.class,
+        ChangeShardNumTest.class,
+        SessionManagerTest.class,
+        HgAssertTest.class,
+        HgPairTest.class,
+        StateClientTest.class
+})
+
+@Slf4j
+public class ClientSuiteTest {
+
 }

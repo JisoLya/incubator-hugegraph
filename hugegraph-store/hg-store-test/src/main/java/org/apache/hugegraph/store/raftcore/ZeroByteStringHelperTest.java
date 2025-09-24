@@ -17,6 +17,7 @@
 
 package org.apache.hugegraph.store.raftcore;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -44,9 +45,9 @@ public class ZeroByteStringHelperTest {
         buffer.put(b1);
         buffer.put(b2);
         var h3 = ZeroByteStringHelper.wrap(buffer);
-        assertEquals(h3.isEmpty(), true);
+        assertTrue(h3.isEmpty());
         var h4 = ZeroByteStringHelper.concatenate(h1, h2);
-        assertTrue(Arrays.equals(ZeroByteStringHelper.getByteArray(h4), buffer.array()));
+        assertArrayEquals(ZeroByteStringHelper.getByteArray(h4), buffer.array());
     }
 
     @Test

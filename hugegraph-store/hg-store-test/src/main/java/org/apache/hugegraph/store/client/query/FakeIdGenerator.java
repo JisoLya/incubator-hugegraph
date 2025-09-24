@@ -15,19 +15,28 @@
  * limitations under the License.
  */
 
-package org.apache.hugegraph.store.common;
+package org.apache.hugegraph.store.client.query;
 
-import org.junit.After;
-import org.junit.BeforeClass;
+import java.util.concurrent.atomic.AtomicLong;
 
-public class BaseCommonTest {
+import org.apache.hugegraph.id.Id;
+import org.apache.hugegraph.id.IdGenerator;
+import org.apache.hugegraph.structure.BaseVertex;
 
-    @BeforeClass
-    public static void beforeClass() throws Exception {
+public class FakeIdGenerator extends IdGenerator {
+
+    private final AtomicLong generator = new AtomicLong(0);
+
+    @Override
+    public Id generate(BaseVertex vertex) {
+        return of(generator.getAndIncrement());
     }
 
-    @After
-    public void teardown() throws Exception {
-        // pass
+    public Id newLongId() {
+        return of(generator.getAndIncrement());
+    }
+
+    public Long nextLongValue() {
+        return generator.getAndIncrement();
     }
 }
