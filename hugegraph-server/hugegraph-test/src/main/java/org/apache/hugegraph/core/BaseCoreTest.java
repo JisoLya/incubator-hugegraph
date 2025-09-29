@@ -93,7 +93,7 @@ public class BaseCoreTest {
         LockUtil.destroy(graph.spaceGraphName());
     }
 
-    @Before
+    //@Before
     public void setup() {
         this.clearData();
         this.clearSchema();
