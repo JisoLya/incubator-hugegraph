@@ -106,4 +106,23 @@ public class Utils {
         System.out.println(message);
         // CHECKSTYLE:ON
     }
+
+    /**
+     * Used for tests
+     * @param graphName
+     * @return
+     */
+    public static HugeGraph open(String graphName) {
+        String confPath = System.getProperty("config_path");
+        if (confPath == null || confPath.isEmpty()) {
+            confPath = CONF_PATH;
+        }
+        try {
+            confPath = Utils.class.getClassLoader()
+                                  .getResource(confPath).getPath();
+        } catch (Exception ignored) {
+            // ignored Exception
+        }
+        return HugeFactory.open(confPath, graphName);
+    }
 }

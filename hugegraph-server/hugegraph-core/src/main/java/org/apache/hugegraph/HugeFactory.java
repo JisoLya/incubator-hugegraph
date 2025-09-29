@@ -100,6 +100,55 @@ public class HugeFactory {
         return open(getLocalConfig(path));
     }
 
+    /**
+     * Used for tests
+     * @param config
+     * @param graphName
+     * @return
+     */
+    public static synchronized HugeGraph open(Configuration config, String graphName) {
+        HugeConfig conf = config instanceof HugeConfig ?
+                          (HugeConfig) config : new HugeConfig(config);
+        // set test graph-name with uuid
+        conf.setProperty(CoreOptions.STORE.name(), graphName);
+        SecurityManager sm = System.getSecurityManager();
+        if (sm != null) {
+            // Not allowed to read file via Gremlin when SecurityManager enabled
+            String configFileName;
+            File configFile = conf.file();
+            if (configFile == null) {
+                configFileName = config.toString();
+            } else {
+                configFileName = configFile.getName();
+            }
+            sm.checkRead(configFileName);
+        }
+
+        String name = conf.get(CoreOptions.STORE);
+        checkGraphName(name, "graph config(like hugegraph.properties)");
+        HugeGraph graph = GRAPHS.get(graphName);
+        if (graph == null || graph.closed()) {
+            graph = new StandardHugeGraph(conf);
+            GRAPHS.put(graphName, graph);
+        } else {
+            String backend = conf.get(CoreOptions.BACKEND);
+            E.checkState(backend.equalsIgnoreCase(graph.backend()),
+                         "Graph name '%s' has been used by backend '%s'",
+                         name, graph.backend());
+        }
+        return graph;
+    }
+
+    /**
+     * Used for tests
+     * @param path
+     * @param graphName
+     * @return
+     */
+    public static HugeGraph open(String path, String graphName){
+        return open(getLocalConfig(path), graphName);
+    }
+
     public static HugeGraph open(URL url) {
         return open(getRemoteConfig(url));
     }

@@ -19,6 +19,7 @@ package org.apache.hugegraph.core;
 
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 import org.apache.hugegraph.HugeGraph;
 import org.apache.hugegraph.HugeGraphParams;
@@ -30,14 +31,13 @@ import org.apache.hugegraph.schema.EdgeLabel;
 import org.apache.hugegraph.schema.SchemaManager;
 import org.apache.hugegraph.testutil.Utils;
 import org.apache.hugegraph.testutil.Whitebox;
+import org.apache.hugegraph.util.LockUtil;
 import org.apache.hugegraph.util.Log;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.slf4j.Logger;
 
 public class BaseCoreTest {
@@ -46,16 +46,16 @@ public class BaseCoreTest {
 
     protected static final int TX_BATCH = 100;
     private static boolean registered = false;
-    private static HugeGraph graph = null;
+    private HugeGraph graph = null;
 
-    public static HugeGraph graph() {
+    public HugeGraph graph() {
         Assert.assertNotNull(graph);
         //Assert.assertFalse(graph.closed());
         return graph;
     }
 
-    @BeforeClass
-    public static void initEnv() {
+    @Before
+    public void initEnv() {
         if (registered) {
             return;
         }
@@ -63,16 +63,19 @@ public class BaseCoreTest {
         registered = true;
     }
 
-    @BeforeClass
-    public static void init() {
-        graph = Utils.open();
+    @Before
+    public void init() {
+        String graphName =
+                "hugegraph" + UUID.randomUUID().toString().replaceAll("-","").substring(0,
+                                                                                               20);
+        graph = Utils.open(graphName);
         graph.clearBackend();
         graph.initBackend();
         graph.serverStarted(GlobalMasterInfo.master("server-test"));
     }
 
-    @AfterClass
-    public static void clear() {
+    @After
+    public void clear() {
         if (graph == null) {
             return;
         }
@@ -87,6 +90,7 @@ public class BaseCoreTest {
             }
             graph = null;
         }
+        LockUtil.destroy(graph.spaceGraphName());
     }
 
     @Before

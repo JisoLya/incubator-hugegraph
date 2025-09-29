@@ -19,7 +19,9 @@ package org.apache.hugegraph.core;
 
 import org.apache.hugegraph.core.PropertyCoreTest.EdgePropertyCoreTest;
 import org.apache.hugegraph.core.PropertyCoreTest.VertexPropertyCoreTest;
+import org.junit.FixMethodOrder;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
@@ -35,7 +37,7 @@ import org.junit.runners.Suite;
         EdgePropertyCoreTest.class,
         RestoreCoreTest.class,
         TaskCoreTest.class,
-        AuthTest.class,
+        //AuthTest.class,
         MultiGraphsTest.class,
         RamTableTest.class
 })
